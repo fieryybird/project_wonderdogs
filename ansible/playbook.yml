@@ -5,7 +5,7 @@
   gather_facts: false
   tasks:
     - name: Ensure SSH port is open on all hosts
-      wait_for:
+      ansible.builtin.wait_for:
         port: 22
         delay: 10
         timeout: 50
@@ -32,23 +32,23 @@
   - project_vars.yml
   tasks:
     - name: Update apt cache
-      apt:
+      ansible.builtin.apt:
         update_cache: yes
 
     - name: Install Apache, PHP, and required modules
-      apt:
+      ansible.builtin.apt:
         name:
           - apache2
-          - php
-          - php-mysql
-          - php-xml
-          - php-mbstring
-          - php-curl
-          - php-zip
+          - php8.1
+          - php8.1-mysql
+          - php8.1-xml
+          - php8.1-mbstring
+          - php8.1-curl
+          - php8.1-zip
         state: present
 
     - name: Install Composer
-      shell: |
+      ansible.builtin.shell: |
         php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
         php composer-setup.php --install-dir=/usr/local/bin --filename=composer
         php -r "unlink('composer-setup.php');"
@@ -56,25 +56,25 @@
         creates: /usr/local/bin/composer
 
     - name: Install Node.js and npm
-      apt:
+      ansible.builtin.apt:
         name:
           - nodejs
           - npm
         state: present
 
     - name: Set Node.js version to 16
-      shell: |
+      ansible.builtin.shell: |
         npm install -g n
         n 16
 
     - name: Clone application repository
-      git:
+      ansible.builtin.git:
         repo: "https://github.com/Practical-DevOps/app-for-devops.git"
         dest: /var/www/html/your-app
         version: main
 
     - name: Configure database connection
-      copy:
+      ansible.builtin.copy:
         content: |
           APP_NAME=Laravel
           APP_ENV=local
@@ -105,7 +105,7 @@
         mode: '0775'
 
     - name: Install Composer dependencies
-      composer:
+      community.general.composer:
         command: install
         arguments: '--ignore-platform-req=ext-curl'
         working_dir: /var/www/html/your-app
@@ -114,12 +114,12 @@
         COMPOSER_ALLOW_SUPERUSER: "1"
 
     - name: Generate application key
-      shell: php artisan key:generate
+      ansible.builtin.shell: php artisan key:generate
       args:
         chdir: /var/www/html/your-app
 
     - name: Run database migrations
-      shell: php artisan migrate --force
+      ansible.builtin.shell: php artisan migrate --force
       args:
         chdir: /var/www/html/your-app
 
@@ -128,12 +128,12 @@
         path: /var/www/html/your-app
 
     - name: Build frontend assets
-      shell: npm run build
+      ansible.builtin.shell: npm run build
       args:
         chdir: /var/www/html/your-app
 
     - name: Set correct permissions
-      file:
+      ansible.builtin.file:
         path: /var/www/html/your-app
         owner: www-data
         group: www-data
@@ -141,7 +141,7 @@
         recurse: yes
 
     - name: Configure Apache virtual host
-      copy:
+      ansible.builtin.copy:
         content: |
           <VirtualHost *:80>
               ServerAdmin localhost
@@ -164,23 +164,23 @@
         - Reload Apache
 
     - name: Enable Apache virtual host
-      command: a2ensite your-app.conf
+      ansible.builtin.command: a2ensite your-app.conf
       notify:
         - Reload Apache
 
     - name: Disable default site (optional)
-      command: a2dissite 000-default.conf
+      ansible.builtin.command: a2dissite 000-default.conf
       ignore_errors: yes
       notify: Reload Apache
 
     - name: Enable Apache rewrite module
-      apache2_module:
+      community.general.apache2_module:
         name: rewrite
         state: present
       notify: Reload Apache
 
   handlers:
     - name: Reload Apache
-      service:
+      ansible.builtin.service:
         name: apache2
         state: reloaded

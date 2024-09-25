@@ -1,32 +1,32 @@
     - name: Update apt cache
-      apt:
+      ansible.builtin.apt:
         update_cache: yes
 
     - name: Install MariaDB
-      apt:
+      ansible.builtin.apt:
         name:
           - mariadb-server
           - python3-pymysql
         state: present
 
     - name: Create database
-      shell: mysql -e "CREATE DATABASE IF NOT EXISTS {{ db_name }};"
+      ansible.builtin.shell: mysql -e "CREATE DATABASE IF NOT EXISTS {{ db_name }};"
 
     - name: Create user
-      shell: >
+      ansible.builtin.shell: >
         mysql -e "CREATE USER IF NOT EXISTS '{{ db_user }}'@'%' 
         IDENTIFIED BY '{{ db_pass }}';"
       
     - name: Grant privileges
-      shell: >
+      ansible.builtin.shell: >
         mysql -e "GRANT ALL PRIVILEGES ON {{ db_name }}.*
         TO '{{ db_user }}'@'%';"
 
     - name: Flush privileges
-      shell: mysql -e "FLUSH PRIVILEGES;"
+      ansible.builtin.shell: mysql -e "FLUSH PRIVILEGES;"
 
     - name: Allow remote connections
-      lineinfile:
+      ansible.builtin.lineinfile:
         path: /etc/mysql/mariadb.conf.d/50-server.cnf
         regexp: '^bind-address'
         line: 'bind-address = 0.0.0.0'
