@@ -134,10 +134,6 @@ resource "null_resource" "update_project_vars" {
     db_ip = aws_instance.ec2_db.public_ip
   }
 
-
-
-
-
   provisioner "local-exec" {
     command = <<EOT
     sed -i 's/db_host:.*/db_host: "${aws_instance.ec2_db.public_ip}"/' ${path.module}/../ansible/project_vars.yml

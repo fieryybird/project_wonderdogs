@@ -7,15 +7,15 @@
     - name: Ensure SSH port is open on all hosts
       wait_for:
         port: 22
-        delay: 30
-        timeout: 200
+        delay: 10
+        timeout: 50
         search_regex: OpenSSH
         host: "{{ (ansible_ssh_host | default(ansible_host)) | default(inventory_hostname) }}"
       retries: 5 
       delay: 20  
       vars:
         ansible_connection: ssh
-        ansible_python_interpreter: /usr/bin/python3
+        ansible_python_interpreter: /usr/bin/python3.10
 
 - name: Install and configure MariaDB
   hosts: db_terraform
@@ -24,12 +24,6 @@
   - project_vars.yml
   roles:
     - mariadb
-
-  handlers:
-    - name: Restart MariaDB
-      service:
-        name: mariadb
-        state: restarted
 
 - name: Install and configure Apache server with application
   hosts: server_terraform
